@@ -15,6 +15,7 @@
       min-height: 100vh;
       font-family: 'Segoe UI', sans-serif;
       color: #eee;
+      padding: 20px;
     }
 
     h1 { font-size: 2rem; margin-bottom: 20px; letter-spacing: 4px; }
@@ -108,8 +109,7 @@
       min-height: 32px;
     }
 
-    #new-game {
-      margin-top: 14px;
+    .btn {
       padding: 10px 28px;
       font-size: 1rem;
       background: #0f3460;
@@ -120,7 +120,77 @@
       transition: background 0.2s;
     }
 
-    #new-game:hover { background: #1a4a80; }
+    .btn:hover { background: #1a4a80; }
+
+    #buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    /* 実績パネル */
+    #history-section {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    #history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    #history-header h2 { font-size: 1.1rem; color: #aad4ff; }
+
+    #stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .stat-box {
+      background: #16213e;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-box .num { font-size: 1.4rem; font-weight: bold; color: #ffd700; }
+
+    #history-list {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: #16213e;
+      padding: 6px 8px;
+      text-align: center;
+      color: #aad4ff;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 6px 8px;
+      text-align: center;
+      border-bottom: 1px solid #1e2a45;
+    }
+
+    tr:nth-child(even) td { background: #16213e55; }
+
+    .result-win  { color: #6dff9a; font-weight: bold; }
+    .result-lose { color: #ff6d6d; }
+    .result-draw { color: #ffd700; }
   </style>
 </head>
 <body>
@@ -141,14 +211,92 @@
 <div id="turn-indicator"></div>
 <div id="board"></div>
 <div id="message"></div>
-<button id="new-game">新しいゲーム</button>
+
+<div id="buttons">
+  <button class="btn" id="new-game">新しいゲーム</button>
+  <button class="btn" id="clear-history">履歴を消去</button>
+</div>
+
+<!-- 実績 -->
+<div id="history-section">
+  <div id="history-header">
+    <h2>対戦実績</h2>
+  </div>
+  <div id="stats">
+    <div class="stat-box"><div class="num" id="stat-total">0</div>総対戦</div>
+    <div class="stat-box"><div class="num" id="stat-win">0</div>勝ち</div>
+    <div class="stat-box"><div class="num" id="stat-lose">0</div>負け</div>
+    <div class="stat-box"><div class="num" id="stat-draw">0</div>引き分け</div>
+    <div class="stat-box"><div class="num" id="stat-rate">-%</div>勝率</div>
+  </div>
+  <div id="history-list">
+    <table>
+      <thead><tr><th>#</th><th>日時</th><th>結果</th><th>黒</th><th>白</th></tr></thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
 const EMPTY = 0, BLACK = 1, WHITE = 2;
 const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const STORAGE_KEY = 'othello_history';
 
 let board, current, gameOver;
 
+// --- 履歴 ---
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveResult(black, white) {
+  const history = loadHistory();
+  const result = black > white ? 'win' : white > black ? 'lose' : 'draw';
+  history.unshift({
+    date: new Date().toLocaleString('ja-JP'),
+    result,
+    black,
+    white
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 100)));
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const tbody = document.getElementById('history-tbody');
+  tbody.innerHTML = '';
+
+  let wins = 0, loses = 0, draws = 0;
+  history.forEach((h, i) => {
+    if (h.result === 'win') wins++;
+    else if (h.result === 'lose') loses++;
+    else draws++;
+
+    const tr = document.createElement('tr');
+    const resultLabel = h.result === 'win' ? '勝ち' : h.result === 'lose' ? '負け' : '引き分け';
+    const resultClass = h.result === 'win' ? 'result-win' : h.result === 'lose' ? 'result-lose' : 'result-draw';
+    tr.innerHTML = `
+      <td>${history.length - i}</td>
+      <td>${h.date}</td>
+      <td class="${resultClass}">${resultLabel}</td>
+      <td>${h.black}</td>
+      <td>${h.white}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const total = history.length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-win').textContent = wins;
+  document.getElementById('stat-lose').textContent = loses;
+  document.getElementById('stat-draw').textContent = draws;
+  document.getElementById('stat-rate').textContent =
+    total > 0 ? Math.round(wins / total * 100) + '%' : '-%';
+}
+
+// --- ゲームロジック ---
 function init() {
   board = Array.from({length: 8}, () => new Array(8).fill(EMPTY));
   board[3][3] = WHITE; board[3][4] = BLACK;
@@ -203,7 +351,6 @@ function place(r, c) {
   }
 }
 
-// AI: maximize flips (greedy)
 function aiMove() {
   const moves = validMoves(WHITE);
   if (!moves.length) return;
@@ -226,7 +373,6 @@ function render() {
       const cell = document.createElement('div');
       cell.className = 'cell' + (hintSet.has(r*8+c) ? ' hint' : '');
       cell.addEventListener('click', () => place(r, c));
-
       if (board[r][c] !== EMPTY) {
         const disc = document.createElement('div');
         disc.className = 'disc ' + (board[r][c] === BLACK ? 'black' : 'white');
@@ -252,6 +398,7 @@ function render() {
     if (black > white) msg.textContent = '黒の勝ち！';
     else if (white > black) msg.textContent = '白の勝ち！';
     else msg.textContent = '引き分け！';
+    saveResult(black, white);
   } else {
     turn.textContent = current === BLACK ? '黒の番 (あなた)' : '白の番 (AI)';
     msg.textContent = '';
@@ -259,6 +406,14 @@ function render() {
 }
 
 document.getElementById('new-game').addEventListener('click', init);
+document.getElementById('clear-history').addEventListener('click', () => {
+  if (confirm('対戦履歴を全て消去しますか？')) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderHistory();
+  }
+});
+
+renderHistory();
 init();
 </script>
 </body>
