@@ -32,7 +32,6 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-shadow: none;
       filter: drop-shadow(0 0 18px #3a8fff88);
     }
 
@@ -42,9 +41,70 @@
       color: #4a7aaa;
       margin-bottom: 28px;
       text-transform: uppercase;
+      min-height: 18px;
     }
 
-    /* スコアエリア */
+    /* ===== モード選択オーバーレイ ===== */
+    #mode-overlay {
+      position: fixed;
+      inset: 0;
+      background: #020c1bdd;
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      gap: 0;
+    }
+
+    #mode-overlay h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 6px;
+      color: #4a9fff;
+      margin-bottom: 36px;
+    }
+
+    .mode-card {
+      width: 280px;
+      background: linear-gradient(135deg, #0d1f3c, #0a2a5e);
+      border: 1px solid #1e4a8a;
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      box-shadow: 0 0 20px #0a2a5a44;
+    }
+
+    .mode-card:hover {
+      border-color: #4a9fff;
+      box-shadow: 0 0 32px #1a6fff55;
+      transform: translateY(-3px);
+    }
+
+    .mode-card .mode-icon {
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+    }
+
+    .mode-card .mode-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      color: #88ccff;
+      margin-bottom: 8px;
+    }
+
+    .mode-card .mode-desc {
+      font-size: 0.8rem;
+      color: #4a7aaa;
+      line-height: 1.5;
+    }
+
+    /* ===== スコアエリア ===== */
     #info {
       display: flex;
       gap: 24px;
@@ -61,6 +121,7 @@
       border-radius: 12px;
       box-shadow: 0 0 16px #0a3a7a44, inset 0 1px 0 #2a5aaa33;
       min-width: 130px;
+      transition: all 0.2s;
     }
 
     .score-box.active {
@@ -103,7 +164,7 @@
       letter-spacing: 1px;
     }
 
-    /* ボード */
+    /* ===== ボード ===== */
     #board-wrap {
       background: linear-gradient(145deg, #0a1e3d, #0d2a55);
       border: 2px solid #1a4a8a;
@@ -146,10 +207,7 @@
       border: 1px solid #0a4a2044;
     }
 
-    .cell:hover {
-      background: linear-gradient(135deg, #0d4a28, #125e32);
-      box-shadow: inset 0 0 10px #2aff8822;
-    }
+    .cell:hover { background: linear-gradient(135deg, #0d4a28, #125e32); box-shadow: inset 0 0 10px #2aff8822; }
 
     .cell.hint::after {
       content: '';
@@ -164,7 +222,7 @@
 
     @keyframes pulse {
       0%, 100% { opacity: 0.6; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.1); }
+      50%       { opacity: 1;   transform: scale(1.1); }
     }
 
     .disc {
@@ -187,7 +245,7 @@
       border: 1px solid #aaccff66;
     }
 
-    /* メッセージ */
+    /* ===== メッセージ ===== */
     #message {
       margin-top: 20px;
       font-size: 1.3rem;
@@ -201,12 +259,8 @@
       filter: drop-shadow(0 0 10px #ffd70066);
     }
 
-    /* ボタン */
-    #buttons {
-      display: flex;
-      gap: 14px;
-      margin-top: 16px;
-    }
+    /* ===== ボタン ===== */
+    #buttons { display: flex; gap: 14px; margin-top: 16px; }
 
     .btn {
       padding: 11px 30px;
@@ -229,23 +283,11 @@
       box-shadow: 0 0 20px #1a6fff44;
     }
 
-    .btn.danger {
-      border-color: #2a3a6a;
-      color: #5588aa;
-    }
+    .btn.danger { border-color: #2a3a6a; color: #5588aa; }
+    .btn.danger:hover { border-color: #ff4a6a; color: #ff8aaa; box-shadow: 0 0 16px #ff4a6a33; }
 
-    .btn.danger:hover {
-      border-color: #ff4a6a;
-      color: #ff8aaa;
-      box-shadow: 0 0 16px #ff4a6a33;
-    }
-
-    /* 実績 */
-    #history-section {
-      margin-top: 36px;
-      width: 100%;
-      max-width: 560px;
-    }
+    /* ===== 実績 ===== */
+    #history-section { margin-top: 36px; width: 100%; max-width: 600px; }
 
     #history-section h2 {
       font-family: 'Orbitron', sans-serif;
@@ -261,6 +303,7 @@
       gap: 10px;
       margin-bottom: 16px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .stat-box {
@@ -273,20 +316,12 @@
       box-shadow: 0 0 10px #0a2a5a33;
     }
 
-    .stat-box .num {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.5rem;
-      color: #5eb8ff;
-      line-height: 1.2;
-    }
-
+    .stat-box .num { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: #5eb8ff; line-height: 1.2; }
     .stat-box .num.highlight { color: #6dff9a; }
     .stat-box .num.danger    { color: #ff6d6d; }
     .stat-box .num.gold      { color: #ffd700; }
-
     .stat-box .label { font-size: 0.72rem; color: #3a6a99; margin-top: 2px; }
 
-    /* テーブル */
     #history-list {
       background: linear-gradient(135deg, #0a1a35, #0d2244);
       border: 1px solid #1a3a6a;
@@ -315,31 +350,21 @@
       border-bottom: 1px solid #1a3a6a;
     }
 
-    td {
-      padding: 7px 8px;
-      text-align: center;
-      border-bottom: 1px solid #0d2244;
-      color: #7aaad0;
-    }
-
+    td { padding: 7px 8px; text-align: center; border-bottom: 1px solid #0d2244; color: #7aaad0; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #0d2a5022; }
 
     .result-win  { color: #6dff9a; font-weight: bold; }
     .result-lose { color: #ff6d8a; }
     .result-draw { color: #ffd700; }
+    .badge-ai { color: #5eb8ff; font-size: 0.75rem; }
+    .badge-2p { color: #cc88ff; font-size: 0.75rem; }
 
-    .no-history {
-      text-align: center;
-      padding: 24px;
-      color: #2a5a7a;
-      font-size: 0.85rem;
-    }
+    .no-history { text-align: center; padding: 24px; color: #2a5a7a; font-size: 0.85rem; }
 
-    /* 区切り線 */
     .divider {
       width: 100%;
-      max-width: 560px;
+      max-width: 600px;
       height: 1px;
       background: linear-gradient(90deg, transparent, #1a4a8a, transparent);
       margin: 32px 0 0;
@@ -348,21 +373,36 @@
 </head>
 <body>
 
+<!-- モード選択 -->
+<div id="mode-overlay">
+  <h2>SELECT MODE</h2>
+  <div class="mode-card" id="mode-ai">
+    <div class="mode-icon">🤖</div>
+    <div class="mode-title">VS AI</div>
+    <div class="mode-desc">コンピュータと対戦<br>一人でも楽しめる</div>
+  </div>
+  <div class="mode-card" id="mode-2p">
+    <div class="mode-icon">👥</div>
+    <div class="mode-title">2 PLAYERS</div>
+    <div class="mode-desc">友達と対戦<br>同じ端末で交互にプレイ</div>
+  </div>
+</div>
+
 <h1>OTHELLO</h1>
-<div class="subtitle">vs AI</div>
+<div class="subtitle" id="subtitle"></div>
 
 <div id="info">
   <div class="score-box" id="box-black">
     <div class="disc-icon black"></div>
     <div>
-      <div class="score-label">あなた（黒）</div>
+      <div class="score-label" id="label-black">黒</div>
       <div class="score-num" id="score-black">2</div>
     </div>
   </div>
   <div class="score-box" id="box-white">
     <div class="disc-icon white"></div>
     <div>
-      <div class="score-label">AI（白）</div>
+      <div class="score-label" id="label-white">白</div>
       <div class="score-num" id="score-white">2</div>
     </div>
   </div>
@@ -378,6 +418,7 @@
 
 <div id="buttons">
   <button class="btn" id="new-game">NEW GAME</button>
+  <button class="btn" id="change-mode">モード変更</button>
   <button class="btn danger" id="clear-history">履歴消去</button>
 </div>
 
@@ -387,14 +428,13 @@
   <h2>BATTLE HISTORY</h2>
   <div id="stats">
     <div class="stat-box"><div class="num" id="stat-total">0</div><div class="label">総対戦</div></div>
-    <div class="stat-box"><div class="num highlight" id="stat-win">0</div><div class="label">勝ち</div></div>
-    <div class="stat-box"><div class="num danger" id="stat-lose">0</div><div class="label">負け</div></div>
+    <div class="stat-box"><div class="num highlight" id="stat-win">0</div><div class="label">黒の勝ち</div></div>
+    <div class="stat-box"><div class="num danger" id="stat-lose">0</div><div class="label">白の勝ち</div></div>
     <div class="stat-box"><div class="num gold" id="stat-draw">0</div><div class="label">引き分け</div></div>
-    <div class="stat-box"><div class="num gold" id="stat-rate">-%</div><div class="label">勝率</div></div>
   </div>
   <div id="history-list">
     <table>
-      <thead><tr><th>#</th><th>日時</th><th>結果</th><th>黒</th><th>白</th></tr></thead>
+      <thead><tr><th>#</th><th>日時</th><th>モード</th><th>結果</th><th>黒</th><th>白</th></tr></thead>
       <tbody id="history-tbody"></tbody>
     </table>
   </div>
@@ -403,10 +443,35 @@
 <script>
 const EMPTY = 0, BLACK = 1, WHITE = 2;
 const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-const STORAGE_KEY = 'othello_history';
+const STORAGE_KEY = 'othello_history_v2';
 
-let board, current, gameOver;
+let board, current, gameOver, mode; // mode: 'ai' | '2p'
 
+// ===== モード選択 =====
+document.getElementById('mode-ai').addEventListener('click', () => startGame('ai'));
+document.getElementById('mode-2p').addEventListener('click', () => startGame('2p'));
+document.getElementById('change-mode').addEventListener('click', () => {
+  document.getElementById('mode-overlay').style.display = 'flex';
+});
+
+function startGame(selectedMode) {
+  mode = selectedMode;
+  document.getElementById('mode-overlay').style.display = 'none';
+
+  if (mode === 'ai') {
+    document.getElementById('subtitle').textContent = 'VS AI';
+    document.getElementById('label-black').textContent = 'あなた（黒）';
+    document.getElementById('label-white').textContent = 'AI（白）';
+  } else {
+    document.getElementById('subtitle').textContent = '2 PLAYERS';
+    document.getElementById('label-black').textContent = 'プレイヤー1（黒）';
+    document.getElementById('label-white').textContent = 'プレイヤー2（白）';
+  }
+
+  init();
+}
+
+// ===== 履歴 =====
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }
@@ -414,8 +479,8 @@ function loadHistory() {
 
 function saveResult(black, white) {
   const history = loadHistory();
-  const result = black > white ? 'win' : white > black ? 'lose' : 'draw';
-  history.unshift({ date: new Date().toLocaleString('ja-JP'), result, black, white });
+  const result = black > white ? 'black' : white > black ? 'white' : 'draw';
+  history.unshift({ date: new Date().toLocaleString('ja-JP'), mode, result, black, white });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 100)));
   renderHistory();
 }
@@ -426,36 +491,42 @@ function renderHistory() {
   tbody.innerHTML = '';
 
   if (history.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="no-history">まだ対戦記録がありません</td></tr>';
-    document.getElementById('stat-total').textContent = 0;
-    document.getElementById('stat-win').textContent = 0;
-    document.getElementById('stat-lose').textContent = 0;
-    document.getElementById('stat-draw').textContent = 0;
-    document.getElementById('stat-rate').textContent = '-%';
+    tbody.innerHTML = '<tr><td colspan="6" class="no-history">まだ対戦記録がありません</td></tr>';
+    ['stat-total','stat-win','stat-lose','stat-draw'].forEach(id =>
+      document.getElementById(id).textContent = id === 'stat-total' ? 0 : 0
+    );
     return;
   }
 
-  let wins = 0, loses = 0, draws = 0;
+  let blackWins = 0, whiteWins = 0, draws = 0;
   history.forEach((h, i) => {
-    if (h.result === 'win') wins++;
-    else if (h.result === 'lose') loses++;
+    if (h.result === 'black') blackWins++;
+    else if (h.result === 'white') whiteWins++;
     else draws++;
 
+    const resultLabel = h.result === 'black' ? '黒の勝ち' : h.result === 'white' ? '白の勝ち' : '引き分け';
+    const resultClass = h.result === 'black' ? 'result-win' : h.result === 'white' ? 'result-lose' : 'result-draw';
+    const modeLabel   = h.mode === 'ai' ? '<span class="badge-ai">AI</span>' : '<span class="badge-2p">2P</span>';
+
     const tr = document.createElement('tr');
-    const label = h.result === 'win' ? '勝ち' : h.result === 'lose' ? '負け' : '引き分け';
-    const cls   = h.result === 'win' ? 'result-win' : h.result === 'lose' ? 'result-lose' : 'result-draw';
-    tr.innerHTML = `<td>${history.length - i}</td><td>${h.date}</td><td class="${cls}">${label}</td><td>${h.black}</td><td>${h.white}</td>`;
+    tr.innerHTML = `
+      <td>${history.length - i}</td>
+      <td>${h.date}</td>
+      <td>${modeLabel}</td>
+      <td class="${resultClass}">${resultLabel}</td>
+      <td>${h.black}</td>
+      <td>${h.white}</td>
+    `;
     tbody.appendChild(tr);
   });
 
-  const total = history.length;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-win').textContent = wins;
-  document.getElementById('stat-lose').textContent = loses;
-  document.getElementById('stat-draw').textContent = draws;
-  document.getElementById('stat-rate').textContent = Math.round(wins / total * 100) + '%';
+  document.getElementById('stat-total').textContent = history.length;
+  document.getElementById('stat-win').textContent   = blackWins;
+  document.getElementById('stat-lose').textContent  = whiteWins;
+  document.getElementById('stat-draw').textContent  = draws;
 }
 
+// ===== ゲームロジック =====
 function init() {
   board = Array.from({length: 8}, () => new Array(8).fill(EMPTY));
   board[3][3] = WHITE; board[3][4] = BLACK;
@@ -502,7 +573,7 @@ function place(r, c) {
     if (!validMoves(current).length) gameOver = true;
   }
   render();
-  if (!gameOver && current === WHITE) setTimeout(aiMove, 420);
+  if (!gameOver && mode === 'ai' && current === WHITE) setTimeout(aiMove, 420);
 }
 
 function aiMove() {
@@ -518,7 +589,7 @@ function aiMove() {
 
 function render() {
   const boardEl = document.getElementById('board');
-  const hints = gameOver ? [] : validMoves(current);
+  const hints   = gameOver ? [] : validMoves(current);
   const hintSet = new Set(hints.map(([r,c]) => r*8+c));
 
   boardEl.innerHTML = '';
@@ -545,18 +616,26 @@ function render() {
   document.getElementById('score-black').textContent = black;
   document.getElementById('score-white').textContent = white;
 
-  // アクティブ強調
   document.getElementById('box-black').classList.toggle('active', current === BLACK && !gameOver);
   document.getElementById('box-white').classList.toggle('active', current === WHITE && !gameOver);
 
   const turn = document.getElementById('turn-indicator');
   const msg  = document.getElementById('message');
+
   if (gameOver) {
     turn.textContent = '';
-    msg.textContent = black > white ? '黒の勝ち！' : white > black ? '白の勝ち！' : '引き分け！';
+    if (mode === 'ai') {
+      msg.textContent = black > white ? '黒の勝ち！' : white > black ? '白の勝ち！' : '引き分け！';
+    } else {
+      msg.textContent = black > white ? 'プレイヤー1の勝ち！' : white > black ? 'プレイヤー2の勝ち！' : '引き分け！';
+    }
     saveResult(black, white);
   } else {
-    turn.textContent = current === BLACK ? '-- あなたの番 --' : '-- AI思考中 --';
+    if (mode === 'ai') {
+      turn.textContent = current === BLACK ? '-- あなたの番 --' : '-- AI思考中 --';
+    } else {
+      turn.textContent = current === BLACK ? '-- プレイヤー1の番（黒）--' : '-- プレイヤー2の番（白）--';
+    }
     msg.textContent = '';
   }
 }
@@ -570,7 +649,6 @@ document.getElementById('clear-history').addEventListener('click', () => {
 });
 
 renderHistory();
-init();
 </script>
 </body>
 </html>
