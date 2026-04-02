@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>オセロ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      color: #eee;
+    }
+
+    h1 { font-size: 2rem; margin-bottom: 20px; letter-spacing: 4px; }
+
+    #info {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+
+    .score-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #16213e;
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+
+    .disc-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #555;
+    }
+
+    .disc-icon.black { background: #111; }
+    .disc-icon.white { background: #f5f5f5; }
+
+    #turn-indicator {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      height: 24px;
+      color: #aad4ff;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 62px);
+      grid-template-rows: repeat(8, 62px);
+      gap: 2px;
+      background: #0f3460;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .cell {
+      width: 62px;
+      height: 62px;
+      background: #1a6b3a;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .cell:hover { background: #1f7d44; }
+
+    .cell.hint::after {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,120,0.35);
+      position: absolute;
+    }
+
+    .disc {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.3);
+      transition: transform 0.3s;
+      position: absolute;
+      backface-visibility: hidden;
+    }
+
+    .disc.black { background: radial-gradient(circle at 35% 35%, #555, #111); }
+    .disc.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); }
+
+    #message {
+      margin-top: 18px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ffd700;
+      min-height: 32px;
+    }
+
+    #new-game {
+      margin-top: 14px;
+      padding: 10px 28px;
+      font-size: 1rem;
+      background: #0f3460;
+      color: #eee;
+      border: 2px solid #4a90d9;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #new-game:hover { background: #1a4a80; }
+  </style>
+</head>
+<body>
+
+<h1>OTHELLO</h1>
+
+<div id="info">
+  <div class="score-box">
+    <div class="disc-icon black"></div>
+    <span>黒: <strong id="score-black">2</strong></span>
+  </div>
+  <div class="score-box">
+    <div class="disc-icon white"></div>
+    <span>白: <strong id="score-white">2</strong></span>
+  </div>
+</div>
+
+<div id="turn-indicator"></div>
+<div id="board"></div>
+<div id="message"></div>
+<button id="new-game">新しいゲーム</button>
+
+<script>
+const EMPTY = 0, BLACK = 1, WHITE = 2;
+const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+
+let board, current, gameOver;
+
+function init() {
+  board = Array.from({length: 8}, () => new Array(8).fill(EMPTY));
+  board[3][3] = WHITE; board[3][4] = BLACK;
+  board[4][3] = BLACK; board[4][4] = WHITE;
+  current = BLACK;
+  gameOver = false;
+  document.getElementById('message').textContent = '';
+  render();
+}
+
+function flips(r, c, color) {
+  if (board[r][c] !== EMPTY) return [];
+  const opp = color === BLACK ? WHITE : BLACK;
+  const result = [];
+  for (const [dr, dc] of DIRS) {
+    let rr = r + dr, cc = c + dc, line = [];
+    while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && board[rr][cc] === opp) {
+      line.push([rr, cc]);
+      rr += dr; cc += dc;
+    }
+    if (line.length && rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && board[rr][cc] === color) {
+      result.push(...line);
+    }
+  }
+  return result;
+}
+
+function validMoves(color) {
+  const moves = [];
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      if (flips(r, c, color).length > 0) moves.push([r, c]);
+  return moves;
+}
+
+function place(r, c) {
+  if (gameOver) return;
+  const f = flips(r, c, current);
+  if (!f.length) return;
+  board[r][c] = current;
+  for (const [fr, fc] of f) board[fr][fc] = current;
+  current = current === BLACK ? WHITE : BLACK;
+  if (!validMoves(current).length) {
+    current = current === BLACK ? WHITE : BLACK;
+    if (!validMoves(current).length) {
+      gameOver = true;
+    }
+  }
+  render();
+  if (!gameOver && current === WHITE) {
+    setTimeout(aiMove, 400);
+  }
+}
+
+// AI: maximize flips (greedy)
+function aiMove() {
+  const moves = validMoves(WHITE);
+  if (!moves.length) return;
+  let best = null, bestScore = -1;
+  for (const [r, c] of moves) {
+    const score = flips(r, c, WHITE).length;
+    if (score > bestScore) { bestScore = score; best = [r, c]; }
+  }
+  place(best[0], best[1]);
+}
+
+function render() {
+  const boardEl = document.getElementById('board');
+  const hints = gameOver ? [] : validMoves(current);
+  const hintSet = new Set(hints.map(([r,c]) => r*8+c));
+
+  boardEl.innerHTML = '';
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (hintSet.has(r*8+c) ? ' hint' : '');
+      cell.addEventListener('click', () => place(r, c));
+
+      if (board[r][c] !== EMPTY) {
+        const disc = document.createElement('div');
+        disc.className = 'disc ' + (board[r][c] === BLACK ? 'black' : 'white');
+        cell.appendChild(disc);
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+
+  let black = 0, white = 0;
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++) {
+      if (board[r][c] === BLACK) black++;
+      else if (board[r][c] === WHITE) white++;
+    }
+  document.getElementById('score-black').textContent = black;
+  document.getElementById('score-white').textContent = white;
+
+  const turn = document.getElementById('turn-indicator');
+  const msg = document.getElementById('message');
+  if (gameOver) {
+    turn.textContent = '';
+    if (black > white) msg.textContent = '黒の勝ち！';
+    else if (white > black) msg.textContent = '白の勝ち！';
+    else msg.textContent = '引き分け！';
+  } else {
+    turn.textContent = current === BLACK ? '黒の番 (あなた)' : '白の番 (AI)';
+    msg.textContent = '';
+  }
+}
+
+document.getElementById('new-game').addEventListener('click', init);
+init();
+</script>
+</body>
+</html>
