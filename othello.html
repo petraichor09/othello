@@ -4,230 +4,393 @@
   <meta charset="UTF-8">
   <title>オセロ</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap');
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #1a1a2e;
+      background: #020c1b;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, #0a2a5e55 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, #0d3b8055 0%, transparent 60%);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-      color: #eee;
-      padding: 20px;
+      justify-content: flex-start;
+      padding: 32px 20px 48px;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: #cce4ff;
     }
 
-    h1 { font-size: 2rem; margin-bottom: 20px; letter-spacing: 4px; }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.4rem;
+      letter-spacing: 10px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #5eb8ff, #a8d8ff, #5eb8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 18px #3a8fff88);
+    }
 
+    .subtitle {
+      font-size: 0.75rem;
+      letter-spacing: 6px;
+      color: #4a7aaa;
+      margin-bottom: 28px;
+      text-transform: uppercase;
+    }
+
+    /* スコアエリア */
     #info {
       display: flex;
-      gap: 40px;
-      margin-bottom: 16px;
-      font-size: 1.1rem;
+      gap: 24px;
+      margin-bottom: 18px;
     }
 
     .score-box {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: #16213e;
-      padding: 10px 20px;
-      border-radius: 8px;
+      gap: 12px;
+      background: linear-gradient(135deg, #0d1f3c, #0a2a5e);
+      border: 1px solid #1e4a8a;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 16px #0a3a7a44, inset 0 1px 0 #2a5aaa33;
+      min-width: 130px;
+    }
+
+    .score-box.active {
+      border-color: #4a9fff;
+      box-shadow: 0 0 20px #1a6fff55, inset 0 1px 0 #4a9fff44;
     }
 
     .disc-icon {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      border: 2px solid #555;
+      flex-shrink: 0;
     }
 
-    .disc-icon.black { background: #111; }
-    .disc-icon.white { background: #f5f5f5; }
+    .disc-icon.black {
+      background: radial-gradient(circle at 35% 35%, #444, #0a0a0a);
+      box-shadow: 0 0 8px #00000088, 0 2px 4px #000;
+      border: 1px solid #333;
+    }
+
+    .disc-icon.white {
+      background: radial-gradient(circle at 35% 35%, #fff, #c8d8f0);
+      box-shadow: 0 0 8px #aaccff44, 0 2px 4px #00000055;
+      border: 1px solid #aaccff88;
+    }
+
+    .score-label { font-size: 0.78rem; color: #5588bb; }
+    .score-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.6rem;
+      color: #88ccff;
+      line-height: 1;
+    }
 
     #turn-indicator {
-      font-size: 1rem;
-      margin-bottom: 12px;
-      height: 24px;
-      color: #aad4ff;
+      font-size: 0.92rem;
+      margin-bottom: 14px;
+      height: 22px;
+      color: #5eb8ff;
+      letter-spacing: 1px;
+    }
+
+    /* ボード */
+    #board-wrap {
+      background: linear-gradient(145deg, #0a1e3d, #0d2a55);
+      border: 2px solid #1a4a8a;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow:
+        0 0 40px #0a3a8a66,
+        0 0 80px #0a2a6033,
+        inset 0 1px 0 #2a5aaa44;
+      position: relative;
+    }
+
+    #board-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #3a7aff33, transparent 50%, #1a4aff22);
+      pointer-events: none;
     }
 
     #board {
       display: grid;
-      grid-template-columns: repeat(8, 62px);
-      grid-template-rows: repeat(8, 62px);
-      gap: 2px;
-      background: #0f3460;
-      padding: 8px;
-      border-radius: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      gap: 3px;
     }
 
     .cell {
-      width: 62px;
-      height: 62px;
-      background: #1a6b3a;
-      border-radius: 4px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #0a3a20, #0d4a28);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       position: relative;
-      transition: background 0.15s;
+      transition: background 0.15s, box-shadow 0.15s;
+      border: 1px solid #0a4a2044;
     }
 
-    .cell:hover { background: #1f7d44; }
+    .cell:hover {
+      background: linear-gradient(135deg, #0d4a28, #125e32);
+      box-shadow: inset 0 0 10px #2aff8822;
+    }
 
     .cell.hint::after {
       content: '';
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: rgba(255,255,120,0.35);
+      background: radial-gradient(circle, #4af0ff88, #2a9fff44);
+      box-shadow: 0 0 8px #4af0ff66;
       position: absolute;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
     }
 
     .disc {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.3);
-      transition: transform 0.3s;
       position: absolute;
-      backface-visibility: hidden;
+      transition: transform 0.25s ease;
     }
 
-    .disc.black { background: radial-gradient(circle at 35% 35%, #555, #111); }
-    .disc.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); }
+    .disc.black {
+      background: radial-gradient(circle at 35% 30%, #555, #0a0a0a);
+      box-shadow: 0 3px 10px #00000099, 0 0 6px #00000055;
+      border: 1px solid #2a2a2a;
+    }
 
+    .disc.white {
+      background: radial-gradient(circle at 35% 30%, #ffffff, #c0d8f8);
+      box-shadow: 0 3px 10px #00000066, 0 0 12px #88bbff33;
+      border: 1px solid #aaccff66;
+    }
+
+    /* メッセージ */
     #message {
-      margin-top: 18px;
+      margin-top: 20px;
       font-size: 1.3rem;
       font-weight: bold;
-      color: #ffd700;
-      min-height: 32px;
+      min-height: 34px;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 10px #ffd70066);
+    }
+
+    /* ボタン */
+    #buttons {
+      display: flex;
+      gap: 14px;
+      margin-top: 16px;
     }
 
     .btn {
-      padding: 10px 28px;
-      font-size: 1rem;
-      background: #0f3460;
-      color: #eee;
-      border: 2px solid #4a90d9;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn:hover { background: #1a4a80; }
-
-    #buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    /* 実績パネル */
-    #history-section {
-      margin-top: 32px;
-      width: 100%;
-      max-width: 540px;
-    }
-
-    #history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    #history-header h2 { font-size: 1.1rem; color: #aad4ff; }
-
-    #stats {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 12px;
+      padding: 11px 30px;
       font-size: 0.9rem;
+      font-family: 'Noto Sans JP', sans-serif;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #0d2a55, #0a1e3d);
+      color: #88ccff;
+      border: 1px solid #2a5aaa;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 12px #0a3a7a33;
     }
 
-    .stat-box {
-      background: #16213e;
-      padding: 8px 16px;
-      border-radius: 8px;
+    .btn:hover {
+      background: linear-gradient(135deg, #1a3a70, #0d2a55);
+      border-color: #4a9fff;
+      color: #bbddff;
+      box-shadow: 0 0 20px #1a6fff44;
+    }
+
+    .btn.danger {
+      border-color: #2a3a6a;
+      color: #5588aa;
+    }
+
+    .btn.danger:hover {
+      border-color: #ff4a6a;
+      color: #ff8aaa;
+      box-shadow: 0 0 16px #ff4a6a33;
+    }
+
+    /* 実績 */
+    #history-section {
+      margin-top: 36px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    #history-section h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      color: #3a7aaa;
+      margin-bottom: 14px;
       text-align: center;
     }
 
-    .stat-box .num { font-size: 1.4rem; font-weight: bold; color: #ffd700; }
+    #stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      justify-content: center;
+    }
 
+    .stat-box {
+      background: linear-gradient(135deg, #0d1f3c, #0a2a5e);
+      border: 1px solid #1a3a6a;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 80px;
+      box-shadow: 0 0 10px #0a2a5a33;
+    }
+
+    .stat-box .num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      color: #5eb8ff;
+      line-height: 1.2;
+    }
+
+    .stat-box .num.highlight { color: #6dff9a; }
+    .stat-box .num.danger    { color: #ff6d6d; }
+    .stat-box .num.gold      { color: #ffd700; }
+
+    .stat-box .label { font-size: 0.72rem; color: #3a6a99; margin-top: 2px; }
+
+    /* テーブル */
     #history-list {
+      background: linear-gradient(135deg, #0a1a35, #0d2244);
+      border: 1px solid #1a3a6a;
+      border-radius: 12px;
+      overflow: hidden;
       max-height: 220px;
       overflow-y: auto;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
+    #history-list::-webkit-scrollbar { width: 6px; }
+    #history-list::-webkit-scrollbar-track { background: #0a1a35; }
+    #history-list::-webkit-scrollbar-thumb { background: #1a4a7a; border-radius: 3px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 
     th {
-      background: #16213e;
-      padding: 6px 8px;
+      background: #0d2244;
+      padding: 8px;
       text-align: center;
-      color: #aad4ff;
+      color: #3a7aaa;
+      font-weight: normal;
+      letter-spacing: 1px;
+      font-size: 0.75rem;
       position: sticky;
       top: 0;
+      border-bottom: 1px solid #1a3a6a;
     }
 
     td {
-      padding: 6px 8px;
+      padding: 7px 8px;
       text-align: center;
-      border-bottom: 1px solid #1e2a45;
+      border-bottom: 1px solid #0d2244;
+      color: #7aaad0;
     }
 
-    tr:nth-child(even) td { background: #16213e55; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #0d2a5022; }
 
     .result-win  { color: #6dff9a; font-weight: bold; }
-    .result-lose { color: #ff6d6d; }
+    .result-lose { color: #ff6d8a; }
     .result-draw { color: #ffd700; }
+
+    .no-history {
+      text-align: center;
+      padding: 24px;
+      color: #2a5a7a;
+      font-size: 0.85rem;
+    }
+
+    /* 区切り線 */
+    .divider {
+      width: 100%;
+      max-width: 560px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #1a4a8a, transparent);
+      margin: 32px 0 0;
+    }
   </style>
 </head>
 <body>
 
 <h1>OTHELLO</h1>
+<div class="subtitle">vs AI</div>
 
 <div id="info">
-  <div class="score-box">
+  <div class="score-box" id="box-black">
     <div class="disc-icon black"></div>
-    <span>黒: <strong id="score-black">2</strong></span>
+    <div>
+      <div class="score-label">あなた（黒）</div>
+      <div class="score-num" id="score-black">2</div>
+    </div>
   </div>
-  <div class="score-box">
+  <div class="score-box" id="box-white">
     <div class="disc-icon white"></div>
-    <span>白: <strong id="score-white">2</strong></span>
+    <div>
+      <div class="score-label">AI（白）</div>
+      <div class="score-num" id="score-white">2</div>
+    </div>
   </div>
 </div>
 
 <div id="turn-indicator"></div>
-<div id="board"></div>
+
+<div id="board-wrap">
+  <div id="board"></div>
+</div>
+
 <div id="message"></div>
 
 <div id="buttons">
-  <button class="btn" id="new-game">新しいゲーム</button>
-  <button class="btn" id="clear-history">履歴を消去</button>
+  <button class="btn" id="new-game">NEW GAME</button>
+  <button class="btn danger" id="clear-history">履歴消去</button>
 </div>
 
-<!-- 実績 -->
+<div class="divider"></div>
+
 <div id="history-section">
-  <div id="history-header">
-    <h2>対戦実績</h2>
-  </div>
+  <h2>BATTLE HISTORY</h2>
   <div id="stats">
-    <div class="stat-box"><div class="num" id="stat-total">0</div>総対戦</div>
-    <div class="stat-box"><div class="num" id="stat-win">0</div>勝ち</div>
-    <div class="stat-box"><div class="num" id="stat-lose">0</div>負け</div>
-    <div class="stat-box"><div class="num" id="stat-draw">0</div>引き分け</div>
-    <div class="stat-box"><div class="num" id="stat-rate">-%</div>勝率</div>
+    <div class="stat-box"><div class="num" id="stat-total">0</div><div class="label">総対戦</div></div>
+    <div class="stat-box"><div class="num highlight" id="stat-win">0</div><div class="label">勝ち</div></div>
+    <div class="stat-box"><div class="num danger" id="stat-lose">0</div><div class="label">負け</div></div>
+    <div class="stat-box"><div class="num gold" id="stat-draw">0</div><div class="label">引き分け</div></div>
+    <div class="stat-box"><div class="num gold" id="stat-rate">-%</div><div class="label">勝率</div></div>
   </div>
   <div id="history-list">
     <table>
@@ -244,7 +407,6 @@ const STORAGE_KEY = 'othello_history';
 
 let board, current, gameOver;
 
-// --- 履歴 ---
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }
@@ -253,12 +415,7 @@ function loadHistory() {
 function saveResult(black, white) {
   const history = loadHistory();
   const result = black > white ? 'win' : white > black ? 'lose' : 'draw';
-  history.unshift({
-    date: new Date().toLocaleString('ja-JP'),
-    result,
-    black,
-    white
-  });
+  history.unshift({ date: new Date().toLocaleString('ja-JP'), result, black, white });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 100)));
   renderHistory();
 }
@@ -268,6 +425,16 @@ function renderHistory() {
   const tbody = document.getElementById('history-tbody');
   tbody.innerHTML = '';
 
+  if (history.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="no-history">まだ対戦記録がありません</td></tr>';
+    document.getElementById('stat-total').textContent = 0;
+    document.getElementById('stat-win').textContent = 0;
+    document.getElementById('stat-lose').textContent = 0;
+    document.getElementById('stat-draw').textContent = 0;
+    document.getElementById('stat-rate').textContent = '-%';
+    return;
+  }
+
   let wins = 0, loses = 0, draws = 0;
   history.forEach((h, i) => {
     if (h.result === 'win') wins++;
@@ -275,15 +442,9 @@ function renderHistory() {
     else draws++;
 
     const tr = document.createElement('tr');
-    const resultLabel = h.result === 'win' ? '勝ち' : h.result === 'lose' ? '負け' : '引き分け';
-    const resultClass = h.result === 'win' ? 'result-win' : h.result === 'lose' ? 'result-lose' : 'result-draw';
-    tr.innerHTML = `
-      <td>${history.length - i}</td>
-      <td>${h.date}</td>
-      <td class="${resultClass}">${resultLabel}</td>
-      <td>${h.black}</td>
-      <td>${h.white}</td>
-    `;
+    const label = h.result === 'win' ? '勝ち' : h.result === 'lose' ? '負け' : '引き分け';
+    const cls   = h.result === 'win' ? 'result-win' : h.result === 'lose' ? 'result-lose' : 'result-draw';
+    tr.innerHTML = `<td>${history.length - i}</td><td>${h.date}</td><td class="${cls}">${label}</td><td>${h.black}</td><td>${h.white}</td>`;
     tbody.appendChild(tr);
   });
 
@@ -292,11 +453,9 @@ function renderHistory() {
   document.getElementById('stat-win').textContent = wins;
   document.getElementById('stat-lose').textContent = loses;
   document.getElementById('stat-draw').textContent = draws;
-  document.getElementById('stat-rate').textContent =
-    total > 0 ? Math.round(wins / total * 100) + '%' : '-%';
+  document.getElementById('stat-rate').textContent = Math.round(wins / total * 100) + '%';
 }
 
-// --- ゲームロジック ---
 function init() {
   board = Array.from({length: 8}, () => new Array(8).fill(EMPTY));
   board[3][3] = WHITE; board[3][4] = BLACK;
@@ -317,9 +476,8 @@ function flips(r, c, color) {
       line.push([rr, cc]);
       rr += dr; cc += dc;
     }
-    if (line.length && rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && board[rr][cc] === color) {
+    if (line.length && rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && board[rr][cc] === color)
       result.push(...line);
-    }
   }
   return result;
 }
@@ -341,14 +499,10 @@ function place(r, c) {
   current = current === BLACK ? WHITE : BLACK;
   if (!validMoves(current).length) {
     current = current === BLACK ? WHITE : BLACK;
-    if (!validMoves(current).length) {
-      gameOver = true;
-    }
+    if (!validMoves(current).length) gameOver = true;
   }
   render();
-  if (!gameOver && current === WHITE) {
-    setTimeout(aiMove, 400);
-  }
+  if (!gameOver && current === WHITE) setTimeout(aiMove, 420);
 }
 
 function aiMove() {
@@ -391,16 +545,18 @@ function render() {
   document.getElementById('score-black').textContent = black;
   document.getElementById('score-white').textContent = white;
 
+  // アクティブ強調
+  document.getElementById('box-black').classList.toggle('active', current === BLACK && !gameOver);
+  document.getElementById('box-white').classList.toggle('active', current === WHITE && !gameOver);
+
   const turn = document.getElementById('turn-indicator');
-  const msg = document.getElementById('message');
+  const msg  = document.getElementById('message');
   if (gameOver) {
     turn.textContent = '';
-    if (black > white) msg.textContent = '黒の勝ち！';
-    else if (white > black) msg.textContent = '白の勝ち！';
-    else msg.textContent = '引き分け！';
+    msg.textContent = black > white ? '黒の勝ち！' : white > black ? '白の勝ち！' : '引き分け！';
     saveResult(black, white);
   } else {
-    turn.textContent = current === BLACK ? '黒の番 (あなた)' : '白の番 (AI)';
+    turn.textContent = current === BLACK ? '-- あなたの番 --' : '-- AI思考中 --';
     msg.textContent = '';
   }
 }
